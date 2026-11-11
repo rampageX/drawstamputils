@@ -23,6 +23,11 @@ jobs:
         run: npm ci
       - name: Build portable application
         run: npm run build:windows
+      - name: Verify portable ZIP exists
+        run: |
+          if (-not (Test-Path 'release/DrawStampUtils-0.2.5-win-x64-portable.zip')) {
+            throw 'Windows ZIP was not created'
+          }
       - name: Upload portable ZIP
         uses: actions/upload-artifact@v4
         with:

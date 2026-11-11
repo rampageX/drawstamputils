@@ -1,9 +1,9 @@
-import { execFileSync } from 'node:child_process'
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { createWriteStream, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { packager } from '@electron/packager'
+import archiver from 'archiver'
 
 const projectDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const version = JSON.parse(readFileSync(path.join(projectDir, 'package.json'), 'utf8')).version
@@ -57,11 +57,17 @@ try {
   mkdirSync(outputDir, { recursive: true })
   const archive = path.join(outputDir, archiveName)
   if (existsSync(archive)) rmSync(archive)
-  if (process.platform === 'win32') {
-    execFileSync('tar.exe', ['-a', '-c', '-f', archive, '.'], { cwd: appDir, stdio: 'inherit' })
-  } else {
-    execFileSync('zip', ['-q', '-r', archive, '.'], { cwd: appDir, stdio: 'inherit' })
-  }
+  const output = createWriteStream(archive)
+  const zipper = archiver('zip', { zlib: { level: 9 } })
+  const finished = new Promise((resolve, reject) => {
+    output.on('close', resolve)
+    output.on('error', reject)
+    zipper.on('error', reject)
+  })
+  zipper.pipe(output)
+  zipper.directory(appDir, false)
+  await zipper.finalize()
+  await finished
   console.log(`Windows x64 portable package: ${archive}`)
 } finally {
   rmSync(workDir, { recursive: true, force: true })
