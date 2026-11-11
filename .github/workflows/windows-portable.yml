@@ -1,0 +1,50 @@
+name: Windows x64 portable
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['main']
+    paths:
+      - '.github/workflows/windows-portable.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Build portable application
+        run: npm run build:windows
+      - name: Upload portable ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: DrawStampUtils-Windows-x64
+          path: release/DrawStampUtils-*-win-x64-portable.zip
+          if-no-files-found: error
+      - name: Publish Windows release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.2.5-win1
+          name: DrawStampUtils v0.2.5 Windows x64
+          target_commitish: ${{ github.sha }}
+          body: |
+            Windows 10/11 x64 便携版。下载 ZIP 完整解压，运行 `DrawStampUtils.exe`。
+
+            - 无需安装 Node.js 或浏览器；离线运行。
+            - 印章图片与 JSON 模板本地导入/导出。
+            - 用户数据保存在程序目录下 `Data` 文件夹。
+            - 不加载网页统计脚本及外部网络资源。
+            - 基于 xxss0903/drawstamputils，Apache-2.0。
+
+            Windows 实际启动及基本使用已由维护者验证；此附件由 GitHub Actions 的 Windows 构建机生成。
+            程序未签名，初次启动可能遇到 Windows SmartScreen 提示。
+          files: release/DrawStampUtils-*-win-x64-portable.zip
+          fail_on_unmatched_files: true

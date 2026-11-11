@@ -29,7 +29,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:windows": "vite build --base ./ && node scripts/build-windows.mjs"
   },
   "dependencies": {
     "rollup": "^4.27.4",
@@ -38,7 +39,9 @@
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
+    "@electron/packager": "20.3.0",
     "@vitejs/plugin-vue": "^5.1.2",
+    "electron": "45.3.0",
     "typescript": "^5.5.3",
     "vite": "^5.4.1",
     "vue-tsc": "^2.0.29"

@@ -10,6 +10,9 @@ yarn-error.log*
 
 # Build output
 build/
+dist/
+release/
+.desktop-build/
 
 # Dependency directories
 jspm_packages/
